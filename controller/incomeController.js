@@ -93,29 +93,37 @@ const getTotalIncomeAmount = async (req, res) => {
     }
 };
 
-// Get incomes by month
+//get incomes by month
 const getIncomesByMonth = async (req, res) => {
-    const { month } = req.query; // Extract month from query parameters
+    const { month } = req.query;  // Get the month from query parameters
 
     if (!month) {
         return res.status(400).json({ message: 'Month parameter is required.' });
     }
 
     try {
-        // Fetch incomes for the specified month and user
+        // Fetch incomes for the specified month (case-insensitive match)
         const incomes = await Income.find({
-            user: req.userId, // Assuming req.userId is set by the authenticate middleware
-            month: month // Match incomes with the specified month
+            month: { $regex: new RegExp(`^${month.trim()}$`, "i") } // Use regex for case-insensitive match
         });
 
+        if (incomes.length === 0) {
+            return res.status(404).json({ message: `No incomes found for the month: ${month}` });
+        }
+
+        // Return filtered incomes
         return res.status(200).json({ incomes });
     } catch (error) {
+        // Handle server errors
         return res.status(500).json({
             message: 'Failed to fetch incomes for the specified month',
             error: error.message
         });
     }
 };
+
+
+
 
 // Export all controller functions
 module.exports = {

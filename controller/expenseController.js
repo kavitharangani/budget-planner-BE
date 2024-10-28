@@ -113,6 +113,39 @@ exports.addExpense = async (req, res) => {
     }
 };
 
+exports.getExpensesByMonth = async (req, res) => {
+    const { month } = req.query;  // Get the month from query parameters
+
+    // Validate that the month parameter is provided
+    if (!month) {
+        return res.status(400).json({ message: 'Month parameter is required.' });
+    }
+
+    try {
+        // Fetch expenses for the specified month and user
+        const expenses = await Expense.find({
+            user: req.userId,  // Ensure this is set correctly in your authentication middleware
+            month: month.trim() // Directly match the month (case-sensitive)
+        });
+
+        // Check if any expenses were found
+        if (expenses.length === 0) {
+            return res.status(404).json({ message: `No expenses found for the month: ${month}` });
+        }
+
+        // Return filtered expenses
+        return res.status(200).json({ expenses });
+    } catch (error) {
+        // Handle server errors
+        return res.status(500).json({
+            message: 'Failed to fetch expenses for the specified month',
+            error: error.message
+        });
+    }
+};
+
+
+
 
 
 
@@ -231,3 +264,5 @@ exports.getTotalExpenses = async (req, res) => {
 //         });
 //     }
 // };
+
+
